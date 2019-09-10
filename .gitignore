@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# gRPC
+*.pb.h
+*.proto.h
+
+# main executable
+rck
+

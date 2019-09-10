@@ -1,0 +1,63 @@
+// prototype for SPICE webservice
+
+syntax = "proto3";
+
+//option java_multiple_files = true;
+//option java_package = "io.grpc.examples.routeguide";
+//option java_outer_classname = "RouteGuideProto";
+//option objc_class_prefix = "RTG";
+
+package rck;
+
+// Execute some code on a remove computer and keep possibility to interact on the fly.
+service RemoteComputationKernel {
+
+	rpc Reset(ResetRequest) returns (ResetResult) {}
+
+	rpc SendVariable(SendVariableRequest) returns (SendVariableResult) {}
+
+	rpc GetVariable(GetVariableRequest) returns (GetVariableResult) {}
+
+	rpc Execute(ExecuteRequest) returns (ExecuteResult) {}
+
+}
+
+message ResetRequest {
+}
+
+message ResetResult {
+	int32 status = 1;
+}
+
+message SendVariableRequest {
+	string variableName = 1;
+	repeated double data = 2;
+}
+
+// response from server about request to setup a new run
+message SendVariableResult {
+	int32 status = 1;
+}
+
+message GetVariableRequest {
+	string variableName = 1;
+}
+
+message GetVariableResult {
+	int32 status = 1;
+	repeated double data = 2;
+}
+
+message ExecuteRequest {
+	string command = 1;
+}
+
+message ExecuteResult {
+	int32 status = 1;
+}
+
+
+
+
+
+
