@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <dlfcn.h>
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -36,16 +38,25 @@ using rck::ExecuteResult;
 class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 	
 	private:
-		std::unordered_map<std::string, std::vector<double> > localData;
+		std::unordered_map<std::string, std::vector<int32_t> > variableDimensions;
+		std::unordered_map<std::string, double* > localData;
 		
 
 	public:
 		explicit RemoteComputationKernelServer() {
-			
+				
 		}
-
+	
+	/* reset the state of the kernel */
 	Status Reset(ServerContext* context, const ResetRequest* req, ResetResult* res) {
 		std::cout << "Reset" << std::endl;
+
+		for (auto i: localData) {
+			free(i.second);
+		}
+		localData.clear();
+		variableDimensions.clear();
+
 
 		res->set_status(0);
 
@@ -57,23 +68,48 @@ class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 
 		std::string variableName = req->variablename();
 
-		std::cout << "variable '" << variableName << "'" << std::endl;
+		std::cout << "receive variable '" << variableName << "'" << std::endl;
 
+		RepeatedField<int32_t> dimensions = req->dimensions();
 		RepeatedField<double> data = req->data();
+
+		// only up to 2d supported at the moment
+		if (dimensions.size()>2) {
+			res->set_status(1);
+			return Status::OK;
+		}
 		
-		std::vector<double> temp;
+		variableDimensions[variableName].resize(dimensions.size());
 
-		temp.resize(data.size());
+		std::cout << "allocating ";
 
+		int64_t numTotal = 1;
 		int i=0;
+		for (int32_t dim: dimensions) {
+			variableDimensions[variableName][i] = dim;
+
+			numTotal *= dim;
+			
+			if (i==0 && dimensions.size()>1) {
+				std::cout << dim << "x";
+			} else {
+				std::cout << dim;
+			}
+			i++;
+		}
+
+		std::cout << " matrix elements: " << numTotal << std::endl;
+
+		double* temp = (double*) malloc(numTotal*sizeof(double));
+
+		i=0;
 		for (double d: data) {
-			std::cout << "data["<<i<<"]="<<d << std::endl;
 			temp[i] = d;
 			i++;
 		}
 
 		localData[variableName] = temp;
-
+		
 		return Status::OK;
 	}
 
@@ -81,11 +117,20 @@ class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 
 		std::string queryName = req->variablename();
 
-		if (localData.count(queryName) > 0) {
-			std::vector<double> result = localData[queryName]; 
+		if (localData.count(queryName)>0 && variableDimensions.count(queryName)>0) {
+			std::vector<int32_t> dimensions = variableDimensions[queryName];
+			double* data = localData[queryName];
 			
-			for (double d: result) {
-				res->add_data(d);
+			int64_t numTotal = 1;
+			for (int32_t dim: dimensions) {
+				res->add_dimensions(dim);
+				numTotal *= dim;
+			}
+
+			std::cout << "return a total of "<<numTotal << " values for "<<queryName << std::endl;
+
+			for (int i=0; i<numTotal; ++i) {
+				res->add_data(data[i]);
 			}
 			res->set_status(0);
 		} else {
@@ -96,14 +141,14 @@ class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 	}
 
 	Status Execute(ServerContext* context, const ExecuteRequest* req, ExecuteResult* res) {
-		
+	/*	
 		for (int i=0; i<localData["testVariable"].size(); ++i) {
 			
 			localData["testVariable"][i] += 1.0;
 
 		}
 
-
+*/
 		return Status::OK;
 	}			
 };

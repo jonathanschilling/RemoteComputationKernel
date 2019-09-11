@@ -1,10 +1,10 @@
-// prototype for SPICE webservice
+// prototype for remote computation webservice
 
 syntax = "proto3";
 
-//option java_multiple_files = true;
-//option java_package = "io.grpc.examples.routeguide";
-//option java_outer_classname = "RouteGuideProto";
+option java_multiple_files = true;
+option java_package = "de.labathome";
+option java_outer_classname = "RCK";
 //option objc_class_prefix = "RTG";
 
 package rck;
@@ -31,7 +31,8 @@ message ResetResult {
 
 message SendVariableRequest {
 	string variableName = 1;
-	repeated double data = 2;
+	repeated int32 dimensions = 2;
+	repeated double data = 3;
 }
 
 // response from server about request to setup a new run
@@ -45,7 +46,8 @@ message GetVariableRequest {
 
 message GetVariableResult {
 	int32 status = 1;
-	repeated double data = 2;
+	repeated int32 dimensions = 2;
+	repeated double data = 3;
 }
 
 message ExecuteRequest {
