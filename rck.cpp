@@ -15,6 +15,9 @@
 
 #include <dlfcn.h>
 
+// TODO: this should not be necessary!
+#include <lapacke.h>
+
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
@@ -141,20 +144,52 @@ class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 	}
 
 	Status Execute(ServerContext* context, const ExecuteRequest* req, ExecuteResult* res) {
-	/*	
-		for (int i=0; i<localData["testVariable"].size(); ++i) {
-			
-			localData["testVariable"][i] += 1.0;
-
+		
+		// open the library
+		std::cout << "Opening liblapacke.so..." << std::endl;
+		void* handle = dlopen("liblapacke.so", RTLD_LAZY);
+		
+		if (!handle) {
+			std::cout << "Cannot open library: " << dlerror() << std::endl;
+			return Status::OK;
+		} else {
+			std::cout << "opened liblapacke.so" << std::endl;
 		}
 
-*/
+		// load the symbol
+    std::cout << "Loading symbol LAPACKE_dgeqrf ..." << std::endl;
+    typedef int (*LAPACKE_dgeqrf_t)(int, int, int, double*, int, double*);
+    
+		// reset errors
+    dlerror();
+    LAPACKE_dgeqrf_t LAPACKE_dgeqrf = (LAPACKE_dgeqrf_t) dlsym(handle, "LAPACKE_dgeqrf");
+    const char *dlsym_error = dlerror();
+    if (dlsym_error) {
+        std::cout << "Cannot load symbol 'LAPACKE_dgeqrf': " << dlsym_error << std::endl;
+        dlclose(handle);
+        return Status::OK;
+    }
+    
+    // use it to do the calculation
+    std::cout << "Calling LAPACKE_dgeqrf..." << std::endl;
+
+		int m=2, n=2, lda=2;
+		double *a = localData["matrix"];
+		double tau[2];
+		int info = LAPACKE_dgeqrf( LAPACK_ROW_MAJOR, m, n, a, lda, tau );
+
+		std::cout << "LAPACKE_dgeqrf result: " << info << std::endl;
+    
+    // close the library
+    std::cout << "Closing library..." << std::endl;
+    dlclose(handle);
+
 		return Status::OK;
 	}			
 };
 
 int main(int argc, char** argv) {
-        std::string server_address("0.0.0.0:50051");
+        std::string server_address("127.0.0.1:50051");
         RemoteComputationKernelServer service;
 
         ServerBuilder builder;
