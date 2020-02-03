@@ -1,0 +1,3 @@
+[submodule "RemoteComputationDefinition"]
+	path = RemoteComputationDefinition
+	url = git@github.com:jonathanschilling/RemoteComputationDefinition.git
