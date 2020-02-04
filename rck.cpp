@@ -174,24 +174,20 @@ class RemoteComputationKernelServer : public RemoteComputationKernel::Service {
 
 
 
-//
-//
-//
-//	/* reset the state of the kernel */
-//	Status Reset(ServerContext* context, const ResetRequest* req, ResetResult* res) {
-//		std::cout << "Reset" << std::endl;
-//
-//		for (auto i: localData) {
-//			free(i.second);
-//		}
-//		localData.clear();
-//		variableDimensions.clear();
-//
-//
-//		res->set_status(0);
-//
-//		return Status::OK;
-//	}
+
+
+
+	/* reset the state of the kernel */
+	Status Reset(ServerContext* context, const ResetRequest* req, ResetResult* res) {
+		std::cout << "Reset" << std::endl;
+
+
+		// free variables
+
+		res->set_error(0);
+
+		return Status::OK;
+	}
 //
 //	Status SendVariable(ServerContext* context, const SendVariableRequest* req, SendVariableResult* res) {
 //		// receive data from Client
