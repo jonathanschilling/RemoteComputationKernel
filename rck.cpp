@@ -359,6 +359,7 @@ public:
 				// compute total number of elements in allocated array
 				int num_total = 1;
 				for (int i=0; i<vars_dimensions[id].size(); ++i) {
+					res->add_dimensions(vars_dimensions[id][i]);
 					num_total *= vars_dimensions[id][i];
 				}
 
@@ -393,6 +394,7 @@ public:
 				// compute total number of elements in allocated array
 				int num_total = 1;
 				for (int i=0; i<vars_dimensions[id].size(); ++i) {
+					res->add_dimensions(vars_dimensions[id][i]);
 					num_total *= vars_dimensions[id][i];
 				}
 
@@ -427,6 +429,7 @@ public:
 				// compute total number of elements in allocated array
 				int num_total = 1;
 				for (int i=0; i<vars_dimensions[id].size(); ++i) {
+					res->add_dimensions(vars_dimensions[id][i]);
 					num_total *= vars_dimensions[id][i];
 				}
 
@@ -454,84 +457,6 @@ public:
 
 
 
-
-	//
-	//	Status SendVariable(ServerContext* context, const SendVariableRequest* req, SendVariableResult* res) {
-	//		// receive data from Client
-	//
-	//		std::string variableName = req->variablename();
-	//
-	//		std::cout << "receive variable '" << variableName << "'" << std::endl;
-	//
-	//		RepeatedField<int32_t> dimensions = req->dimensions();
-	//		RepeatedField<double> data = req->data();
-	//
-	//		// only up to 2d supported at the moment
-	//		if (dimensions.size()>2) {
-	//			res->set_status(1);
-	//			return Status::OK;
-	//		}
-	//
-	//		variableDimensions[variableName].resize(dimensions.size());
-	//
-	//		std::cout << "allocating ";
-	//
-	//		int64_t numTotal = 1;
-	//		int i=0;
-	//		for (int32_t dim: dimensions) {
-	//			variableDimensions[variableName][i] = dim;
-	//
-	//			numTotal *= dim;
-	//
-	//			if (i==0 && dimensions.size()>1) {
-	//				std::cout << dim << "x";
-	//			} else {
-	//				std::cout << dim;
-	//			}
-	//			i++;
-	//		}
-	//
-	//		std::cout << " matrix elements: " << numTotal << std::endl;
-	//
-	//		double* temp = (double*) malloc(numTotal*sizeof(double));
-	//
-	//		i=0;
-	//		for (double d: data) {
-	//			temp[i] = d;
-	//			i++;
-	//		}
-	//
-	//		localData[variableName] = temp;
-	//
-	//		return Status::OK;
-	//	}
-	//
-	//	Status GetVariable(ServerContext* context, const GetVariableRequest* req, GetVariableResult* res) {
-	//
-	//		std::string queryName = req->variablename();
-	//
-	//		if (localData.count(queryName)>0 && variableDimensions.count(queryName)>0) {
-	//			std::vector<int32_t> dimensions = variableDimensions[queryName];
-	//			double* data = localData[queryName];
-	//
-	//			int64_t numTotal = 1;
-	//			for (int32_t dim: dimensions) {
-	//				res->add_dimensions(dim);
-	//				numTotal *= dim;
-	//			}
-	//
-	//			std::cout << "return a total of "<<numTotal << " values for "<<queryName << std::endl;
-	//
-	//			for (int i=0; i<numTotal; ++i) {
-	//				res->add_data(data[i]);
-	//			}
-	//			res->set_status(0);
-	//		} else {
-	//			res->set_status(1);
-	//		}
-	//
-	//		return Status::OK;
-	//	}
 	//
 	//	Status Execute(ServerContext* context, const ExecuteRequest* req, ExecuteResult* res) {
 	//
